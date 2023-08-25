@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome</title>
+</head>
+
+<style>
+    body {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background-color: #111111;
+        color: #fff;
+    }
+
+    .ask, .teach {
+        padding: 40px;
+        background: #242424;
+        border-radius: 4px;
+        text-align: center;
+        margin: 8px 4px;
+        display: flex;
+        justify-content: space-between;
+    }
+
+    form input{
+        display: block;
+    }
+
+    form input,
+    form button,
+    .btn {
+        border: none;
+        outline: none;
+        padding: 10px 15px;
+        border-radius: 4px;
+        margin: 4px 2px;
+    }
+
+    form button,
+    .btn {
+        background-color: #111111;
+        color: #fff;
+        display: inline-block;
+        cursor: pointer;
+    }
+
+
+    @media screen and (max-width:768px) {
+        body {
+            display: block;
+        }
+    }
+</style>
+
+<body>
+
+    <div class="ask">
+        <form action="/" method="post" onsubmit="submit_request(event)">
+            <input type="text" name="name" id="user_input" placeholder="Query">
+            <button>Submit</button>
+        </form>
+
+        <button class="btn" id="listen2">:mic</button>
+
+
+        <div id="output">
+        </div>
+    </div>
+
+    <div class="teach">
+        <form action="/teach" method="post" onsubmit="teach_request(event)">
+            <input type="text" name="name" id="user_query" placeholder="Query">
+            <input type="text" name="name2" id="user_context" placeholder="Context">
+            <button>Submit</button>
+        </form>
+        <span id="listen" class="btn">🎙</span>
+
+        <div id="soutput">
+        </div>
+    </div>
+
+
+
+    <script>
+
+        const url = "http://localhost:8080";
+        const synth = window.speechSynthesis;
+
+        class RecognitionMaker {
+            constructor(element) {
+                this.element = element;
+                this.recognition = new window.webkitSpeechRecognition();
+                this.recognition.continuous = true;
+                this.recognition.lang = 'en-US';
+
+                this.recognition.onresult = async (event) => {
+                    const transcript = await event.results[event.results.length - 1][0].transcript;
+                    this.element.value = transcript;
+                    this.recognition.stop();
+                };
+
+                this.recognition.onerror = (event) => {
+                    console.error('Speech recognition error:', event.error);
+                };
+                this.start = () => {
+                    this.recognition.start();
+                }
+            }
+        }
+
+        let aux = new RecognitionMaker(document.getElementById('user_query'));
+        document.getElementById('listen').addEventListener('click', ()=>{
+            aux.start();
+        })
+
+        let aux2 = new RecognitionMaker(document.getElementById('user_input'));
+        document.getElementById('listen2').addEventListener('click', ()=>{
+            aux2.start();
+        })
+
+        async function submit_request(e) {
+            e.preventDefault();
+            let user_query = document.getElementById('user_input').value;
+            let server = "t";
+            await fetch(`${url}/`,
+                {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ "query": user_query })
+                }
+            ).then(res => { return res.json() }
+            ).then(body => { server = body["res"]; }
+            ).catch(err => { server = err });
+
+            let server_res = document.createElement('p');
+            server_res.innerHTML = server;
+            let user_req = document.createElement('p');
+            user_req.innerHTML = user_query;
+            document.getElementById('output').appendChild(user_req);
+            let voices = await window.speechSynthesis.getVoices();
+            const textToSpeak = server;
+            let utterance = new SpeechSynthesisUtterance(textToSpeak);
+            utterance.voice = voices[29];
+            await synth.speak(utterance);
+            document.getElementById('output').appendChild(server_res);
+
+        }
+
+
+        async function teach_request(e) {
+            e.preventDefault();
+            let user_query = document.getElementById('user_query').value;
+            let user_context = document.getElementById('user_context').value;
+            let server = "t";
+            await fetch(`${url}/teach/`,
+                {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ "query": user_query, "context": user_context })
+                }
+            ).then(res => { return res.json() }
+            ).then(body => { server = body["res"]; }
+            ).catch(err => { server = err });
+
+            let server_res = document.createElement('p');
+            server_res.innerHTML = server;
+            let user_req = document.createElement('p');
+            user_req.innerHTML = `${user_query}<br>${user_context}`;
+            document.getElementById('soutput').appendChild(user_req);
+            let voices = await window.speechSynthesis.getVoices();
+            const textToSpeak = server;
+            let utterance = new SpeechSynthesisUtterance(textToSpeak);
+            utterance.voice = voices[29];
+            await synth.speak(utterance);
+            document.getElementById('soutput').appendChild(server_res);
+
+        }
+
+    </script>
+
+</body>
+
+</html>

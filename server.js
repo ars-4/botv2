@@ -1,33 +1,51 @@
-const server = require("express")();
+const express = require("express");
+const app = express();
 const bodyParser = require('body-parser');
 const cors = require("cors");
+const path = require('path');
 
-const Bot = require("./index").Bot;
+const bot = require("./index");
+const seth = new bot.Bot("handler.pds");
 
-
-let acer = new Bot("handler.psd");
-
+app.engine('html', require('ejs').renderFile);
 
 
 const port = process.env.PORT || 8080;
 
-server.use(cors());
-server.use(bodyParser.json());
-server.use(bodyParser.urlencoded({ extended: false }));
+app.use(cors());
+app.use(express.json());
+app.use(express.urlencoded({
+    extended: true
+  }));
+
+app.use(express.static(path.join(__dirname, '/')));
+app.engine('html', require('ejs').renderFile);
+app.set('view engine', 'html');
+app.set('views', __dirname);
 
 
-server.get('/', (req, res) => {
-    res.send("Welcome");
+app.get('/', async (req, res) => {
+    var name = 'hello';
+    res.render(__dirname + "/web/index.html", { name: name })
 })
 
 
-server.post('/', (req, res) => {
+app.post('/', async (req, res) => {
     let data = req.body;
-    res.send('Data Received: ' + JSON.stringify(data));
+    seth.getData(data["query"], (result) => {
+        res.send({"res":result["reply"]});
+    })
+})
+
+
+app.post('/teach', (req, res) => {
+    let data = req.body;
+    seth.writeData(data["query"], data["context"]);
+    res.send({ "res":`Got it! Answer to ${data["query"]} is ${data["context"]}` });
 })
 
 
 
-server.listen(port, () => {
+app.listen(port, () => {
     console.log(`Server listening at port ${port}`)
 })

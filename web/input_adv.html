@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Voice-Activated Speech to Text</title>
+</head>
+<body>
+    <h1>Voice-Activated Speech to Text</h1>
+    <p id="result">Listening...</p>
+
+    <script src="annyang.min.js"></script>
+    <script>
+        const resultElement = document.getElementById('result');
+        const recognition = new window.webkitSpeechRecognition();
+
+        recognition.continuous = true; // Keeps listening until explicitly stopped
+        recognition.lang = 'en-US'; // Language for speech recognition
+
+        recognition.onresult = (event) => {
+            const transcript = event.results[event.results.length - 1][0].transcript;
+            resultElement.textContent = transcript;
+        };
+
+        recognition.onerror = (event) => {
+            console.error('Speech recognition error:', event.error);
+        };
+
+        // Set up voice commands
+        if (annyang) {
+            // annyang.start();
+            annyang.addCommands({
+                'start': () => {
+                    alert("Done");
+                    // recognition.start();
+                    // resultElement.textContent = 'Listening...';
+                },
+                'stop': () => {
+                    alert("ok");
+                    // recognition.stop();
+                    // resultElement.textContent = 'Listening stopped.';
+                }
+            });
+        }
+    </script>
+</body>
+</html>

@@ -92,27 +92,27 @@ class Bot {
 
 
 
-let f = new Bot('handler.pds');
-let operation = process.argv[2];
-let query = process.argv[3];
+// let f = new Bot('handler.pds');
+// let operation = process.argv[2];
+// let query = process.argv[3];
 
 
-if (operation === "1" || operation === 1) {
-    let context = process.argv[4]
-    f.writeData(query, context);
-    say.speak(`got it, ${query} answer is ${context}`);
-} else {
-    f.getData(query, (result) => {
-        let res = "";
-        if (result != undefined) {
-            res = result["reply"];
-        } else {
-            res = "Sorry, I don't know the answer to that. Please teach me!";
-        }
-        setTimeout(() => { console.log(res); }, 2500);
-        say.speak(res);
-    });
-}
+// if (operation === "1" || operation === 1) {
+//     let context = process.argv[4]
+//     f.writeData(query, context);
+//     say.speak(`got it, ${query} answer is ${context}`);
+// } else {
+//     f.getData(query, (result) => {
+//         let res = "";
+//         if (result != undefined) {
+//             res = result["reply"];
+//         } else {
+//             res = "Sorry, I don't know the answer to that. Please teach me!";
+//         }
+//         setTimeout(() => { console.log(res); }, 2500);
+//         say.speak(res);
+//     });
+// }
 
 
 module.exports.Bot = Bot;
